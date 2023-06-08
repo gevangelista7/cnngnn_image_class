@@ -3,10 +3,7 @@ import time
 
 import pandas as pd
 import torch
-
-from models import GIN
 from utils import loader_from_pyg_list
-from torch_geometric.nn.pool import global_mean_pool
 
 torch.manual_seed(42)
 
@@ -46,6 +43,7 @@ def instrumented_train(model, file_name, device, n_epochs=100):
     elapsed_time = 0
     max_train_acc = 0
     max_test_acc = 0
+    finnish_counter = 0
     best_model = None
     output_filename = model.model_name+"_"+datetime.now().isoformat().replace(':', '_')
 
@@ -63,6 +61,7 @@ def instrumented_train(model, file_name, device, n_epochs=100):
 
         if test_acc > max_test_acc:
             max_test_acc = test_acc
+            finnish_counter = 0
             print('Best model! Saving Checkpoint...')
             torch.save(model.state_dict(), './models/' + output_filename)
 
@@ -72,11 +71,17 @@ def instrumented_train(model, file_name, device, n_epochs=100):
             'test_acc': test_acc
         })
 
+        if test_acc < max_test_acc - .2:
+            finnish_counter += 1
+            if finnish_counter > 20:
+                break
+
     results = pd.DataFrame.from_records(results)
     results.attrs['model'] = model.model_name
     results.attrs['n_layers'] = model.num_layers
     results.attrs['hidden_channels'] = model.hidden_dim
     results.attrs['pooling'] = model.pooling_name
+    results.attrs['final_epoch'] = epoch
 
     results.attrs['datetime'] = time.asctime()
     results.attrs['preprocess_file'] = file_name
@@ -101,4 +106,3 @@ def instrumented_train(model, file_name, device, n_epochs=100):
 #                 pooling=global_mean_pool).to(device)
 #
 #     instrumented_train(model, file_name, 3)
-

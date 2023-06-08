@@ -1,5 +1,6 @@
 from copy import deepcopy
 import torch
+import torch.nn.functional as F
 from torch.nn import Linear, PReLU
 from torch_geometric.nn import GCNConv,  SAGEConv, GINConv, GATConv
 from torchvision.ops import MLP
@@ -35,7 +36,7 @@ class GNNBase(torch.nn.Module):
         # 3. Apply a final classifier
         x = self.lin(x)
 
-        return x
+        return F.log_softmax(x, dim=1)
 
 
 class GenericGNN(GNNBase):

@@ -1,12 +1,15 @@
-from models import GCN, GraphSAGE, GIN, GAT
+from models import GCN, GIN, GAT
 from train import instrumented_train
-from torch_geometric.nn.pool import global_mean_pool, global_add_pool, graclus
-
+from torch_geometric.nn.pool import global_mean_pool, global_add_pool
 import torch
 import itertools
 import argparse
+import os
+import sys
+sys.path.append('.')
 
 torch.manual_seed(42)
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -17,22 +20,20 @@ if __name__ == '__main__':
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
+    root_dir = '../datasets/UATD_graphs' if os.name == 'nt' else '/home/gabriel/thesis/dataset/UATD_graphs'
+
     grid = {
         'hidden_dim': [16, 32],
         'num_layers': [2, 4, 8],
-        'pooling': [global_mean_pool, global_add_pool],     # graclus],
-        'preprocessing': ['../datasets/UATD_graphs/pixel_inf/pyg_list_original_knn_w_pix_300.pkl',
-        #                   '../datasets/UATD_graphs/slic/pyg_list_autocontrast1_knn_w.pkl',
-        #                   '../datasets/UATD_graphs/slic/pyg_list_equalize_knn_w.pkl',
-        #                   '../datasets/UATD_graphs/slic/pyg_list_original_knn_w.pkl']
-        #                   ]
-        # 'preprocessing': [#'/home/gabriel/thesis/dataset/UATD_graphs/pixel_inf/pyg_list_original_knn_w_pix_300.pkl',
-        #                   '/home/gabriel/thesis/dataset/UATD_graphs/slic/pyg_list_autocontrast1_knn_w.pkl',
-        #                   '/home/gabriel/thesis/dataset/UATD_graphs/slic/pyg_list_equalize_knn_w.pkl',
-        #                   '/home/gabriel/thesis/dataset/UATD_graphs/slic/pyg_list_original_knn_w.pkl'
+        'pooling': [global_mean_pool, global_add_pool],
+        'preprocessing': [root_dir+'/pixel_inf/original_knn_w_pix_300.pkl',
+                          root_dir+'/slic/autocontrast1_knn_w.pkl',
+                          root_dir+'/slic/equalize_knn_w.pkl',
+                          root_dir+'/slic/original_knn_w.pkl'
         ]
     }
-    n_epochs = 200
+    n_epochs = 300
+    iter_count = iter_start
 
     for parameters in itertools.islice(itertools.product(*grid.values()), iter_start, None):
         hidden_dim = parameters[0]
@@ -43,9 +44,6 @@ if __name__ == '__main__':
         GCN_model = GCN(input_dim=3, output_dim=10,
                         hidden_dim=hidden_dim, num_layers=num_layers, pooling=pooling).to(device)
 
-        # GraphSAGE_model = GraphSAGE(input_dim=3, output_dim=10,
-        #                             hidden_dim=hidden_dim, num_layers=num_layers, pooling=pooling).to(device)
-
         GAT_model = GAT(input_dim=3, output_dim=10,
                         hidden_dim=hidden_dim, num_layers=num_layers, pooling=pooling, heads=4).to(device)
 
@@ -53,14 +51,19 @@ if __name__ == '__main__':
                         hidden_dim=hidden_dim, num_layers=num_layers, pooling=pooling).to(device)
 
         print('Beginning of test with the parameters: ' + str(parameters))
+
         print('=== GCN model ===')
+        print(str(parameters))
         instrumented_train(GCN_model, preprocessing, device, n_epochs)
 
-        # print('=== GrapSAGE model ===')
-        # instrumented_train(GraphSAGE_model, preprocessing, device, n_epochs)
-
         print('=== GAT model ===')
+        print(str(parameters))
         instrumented_train(GAT_model, preprocessing, device, n_epochs)
 
         print('=== GIN model ===')
+        print(str(parameters))
         instrumented_train(GIN_model, preprocessing, device, n_epochs)
+
+        iter_count += 1
+        with open(root_dir+'/log_last_iter.txt', 'w') as f:
+            f.write('last iter: ' + iter_count)

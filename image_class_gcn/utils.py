@@ -75,15 +75,15 @@ def df2pyg_list(path):
 
     joblib.dump(data_list, os.path.join(root, dest_file))
 
-
-if __name__ == '__main__':
-    import time
-    st = time.time()
-    # a = loader_from_df('./datasets/UATD_graphs/slic/equalize_knn_w.pkl', partition='Training')
-    # df2pyg_list('./datasets/UATD_graphs/pixel_inf/original_knn_w_pix_300.pkl')
-    # loader = loader_from_pyg_list('./datasets/UATD_graphs/slic/pyg_list_equalize_knn_w.pkl',
-    #                               'Training', True)
-
-    print(time.time()-st)
+#
+# if __name__ == '__main__':
+#     import time
+#     st = time.time()
+#     # a = loader_from_df('./datasets/UATD_graphs/slic/equalize_knn_w.pkl', partition='Training')
+#     # df2pyg_list('./datasets/UATD_graphs/pixel_inf/original_knn_w_pix_300.pkl')
+#     # loader = loader_from_pyg_list('./datasets/UATD_graphs/slic/pyg_list_equalize_knn_w.pkl',
+#     #                               'Training', True)
+#
+#     print(time.time()-st)
 
 
