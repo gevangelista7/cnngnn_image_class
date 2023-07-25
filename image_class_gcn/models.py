@@ -96,3 +96,17 @@ class GAT(GNNBase):
         )
         self.lin = Linear(hidden_dim*heads, output_dim)
         self.model_name = GATConv.__name__
+
+
+class SPdirect(torch.nn.Module):
+    def __init__(self, input_dim, output_dim, pooling):
+        super(SPdirect, self).__init__()
+
+        self.lin = Linear(input_dim, output_dim)
+        self.pooling = pooling
+
+    def forward(self, x, edge_index, batch):
+        x = self.pooling(x, batch)
+        x = self.lin(x)
+
+        return F.log_softmax(x, dim=1)
