@@ -7,6 +7,7 @@ import itertools
 import argparse
 import os
 import sys
+import joblib
 sys.path.append('.')
 
 torch.manual_seed(42)
@@ -24,8 +25,8 @@ if __name__ == '__main__':
     graphs_dir = datasets_dir + '/UATD_graphs'
 
     grid = {
-        'hidden_dim': [8, 16, 32],
-        'num_layers': [2, 4, 8],
+        'hidden_dim': [8, 32],
+        'num_layers': [4, 8],
         # 'pooling': [global_mean_pool, global_add_pool],
         'pooling': [global_mean_pool],
         'preprocessing': [
@@ -37,38 +38,38 @@ if __name__ == '__main__':
             graphs_dir+'/cnn/autocontrast1_knn_w_75_ResNet18_cut1',
             graphs_dir+'/cnn/autocontrast1_knn_w_75_ResNet18_cut2',
             graphs_dir+'/cnn/autocontrast1_knn_w_75_ResNet18_cut5',
-            graphs_dir+'/cnn/autocontrast1_knn_w_75_ResNet18_cut6',
+            # graphs_dir+'/cnn/autocontrast1_knn_w_75_ResNet18_cut6',
             graphs_dir+'/cnn/autocontrast1_knn_w_75_ResNet18_cut8',
 
             graphs_dir + '/cnn/autocontrast1_knn_w_75_ResNet18_cut1_ft',
             graphs_dir+'/cnn/autocontrast1_knn_w_75_ResNet18_cut2_ft',
             graphs_dir+'/cnn/autocontrast1_knn_w_75_ResNet18_cut5_ft',
-            graphs_dir+'/cnn/autocontrast1_knn_w_75_ResNet18_cut6_ft',
+            # graphs_dir+'/cnn/autocontrast1_knn_w_75_ResNet18_cut6_ft',
             graphs_dir+'/cnn/autocontrast1_knn_w_75_ResNet18_cut8_ft',
 
-            graphs_dir+'/cnn/original_knn_w_75_ResNet18_cut1',
-            graphs_dir+'/cnn/original_knn_w_75_ResNet18_cut2',
-            graphs_dir+'/cnn/original_knn_w_75_ResNet18_cut5',
-            graphs_dir+'/cnn/original_knn_w_75_ResNet18_cut6',
-            graphs_dir+'/cnn/original_knn_w_75_ResNet18_cut8',
+            # graphs_dir+'/cnn/original_knn_w_75_ResNet18_cut1',
+            # graphs_dir+'/cnn/original_knn_w_75_ResNet18_cut2',
+            # graphs_dir+'/cnn/original_knn_w_75_ResNet18_cut5',
+            # # graphs_dir+'/cnn/original_knn_w_75_ResNet18_cut6',
+            # graphs_dir+'/cnn/original_knn_w_75_ResNet18_cut8',
+            #
+            # graphs_dir + '/cnn/original_knn_w_75_ResNet18_cut1_ft',
+            # graphs_dir + '/cnn/original_knn_w_75_ResNet18_cut2_ft',
+            # graphs_dir + '/cnn/original_knn_w_75_ResNet18_cut5_ft',
+            # # graphs_dir + '/cnn/original_knn_w_75_ResNet18_cut6_ft',
+            # graphs_dir + '/cnn/original_knn_w_75_ResNet18_cut8_ft',
 
-            graphs_dir + '/cnn/original_knn_w_75_ResNet18_cut1_ft',
-            graphs_dir + '/cnn/original_knn_w_75_ResNet18_cut2_ft',
-            graphs_dir + '/cnn/original_knn_w_75_ResNet18_cut5_ft',
-            graphs_dir + '/cnn/original_knn_w_75_ResNet18_cut6_ft',
-            graphs_dir + '/cnn/original_knn_w_75_ResNet18_cut8_ft',
-
-            graphs_dir + '/cnn/equalize_knn_w_75_ResNet18_cut1',
-            graphs_dir + '/cnn/equalize_knn_w_75_ResNet18_cut2',
-            graphs_dir + '/cnn/equalize_knn_w_75_ResNet18_cut5',
-            graphs_dir + '/cnn/equalize_knn_w_75_ResNet18_cut6',
-            graphs_dir + '/cnn/equalize_knn_w_75_ResNet18_cut8',
-
-            graphs_dir + '/cnn/equalize_knn_w_75_ResNet18_cut1_ft',
-            graphs_dir + '/cnn/equalize_knn_w_75_ResNet18_cut2_ft',
-            graphs_dir + '/cnn/equalize_knn_w_75_ResNet18_cut5_ft',
-            graphs_dir + '/cnn/equalize_knn_w_75_ResNet18_cut6_ft',
-            graphs_dir + '/cnn/equalize_knn_w_75_ResNet18_cut8_ft',
+            # graphs_dir + '/cnn/equalize_knn_w_75_ResNet18_cut1',
+            # graphs_dir + '/cnn/equalize_knn_w_75_ResNet18_cut2',
+            # graphs_dir + '/cnn/equalize_knn_w_75_ResNet18_cut5',
+            # graphs_dir + '/cnn/equalize_knn_w_75_ResNet18_cut6',
+            # graphs_dir + '/cnn/equalize_knn_w_75_ResNet18_cut8',
+            #
+            # graphs_dir + '/cnn/equalize_knn_w_75_ResNet18_cut1_ft',
+            # graphs_dir + '/cnn/equalize_knn_w_75_ResNet18_cut2_ft',
+            # graphs_dir + '/cnn/equalize_knn_w_75_ResNet18_cut5_ft',
+            # graphs_dir + '/cnn/equalize_knn_w_75_ResNet18_cut6_ft',
+            # graphs_dir + '/cnn/equalize_knn_w_75_ResNet18_cut8_ft',
         ]
     }
     n_epochs = 300
@@ -80,13 +81,16 @@ if __name__ == '__main__':
         pooling = parameters[2]
         preprocessing = parameters[3]
 
-        GCN_model = GCN(input_dim=3, output_dim=10,
+        ds = joblib.load(preprocessing)
+        num_features = ds[0].x.shape[1]
+
+        GCN_model = GCN(input_dim=num_features, output_dim=10,
                         hidden_dim=hidden_dim, num_layers=num_layers, pooling=pooling).to(device)
 
-        GAT_model = GAT(input_dim=3, output_dim=10,
+        GAT_model = GAT(input_dim=num_features, output_dim=10,
                         hidden_dim=hidden_dim, num_layers=num_layers, pooling=pooling, heads=4).to(device)
 
-        GIN_model = GIN(input_dim=3, output_dim=10,
+        GIN_model = GIN(input_dim=num_features, output_dim=10,
                         hidden_dim=hidden_dim, num_layers=num_layers, pooling=pooling).to(device)
 
         print('Beginning of test with the parameters: ' + str(parameters))
@@ -99,9 +103,9 @@ if __name__ == '__main__':
         print(str(parameters))
         instrumented_train(GAT_model, preprocessing, device, n_epochs)
 
-        print('=== GIN model ===')
-        print(str(parameters))
-        instrumented_train(GIN_model, preprocessing, device, n_epochs)
+        # print('=== GIN model ===')
+        # print(str(parameters))
+        # instrumented_train(GIN_model, preprocessing, device, n_epochs)
 
         iter_count += 1
         with open(code_dir+'/log_last_iter.txt', 'w') as f:

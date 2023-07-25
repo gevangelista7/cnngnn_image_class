@@ -22,7 +22,7 @@ def train(model, train_loader, device):
         optimizer.zero_grad()
 
 
-def test(model, test_loader, device):
+def validate(model, test_loader, device):
     model.eval()
     correct = 0
     for data in test_loader:
@@ -34,33 +34,57 @@ def test(model, test_loader, device):
     return correct / len(test_loader.dataset)
 
 
-def instrumented_train(model, file_name, device, n_epochs=100):
+def test(model, test_loader, device):
+    model.eval()
+    # num_classes = model.num_classes                                     # Obter o número de classes do modelo
+    num_classes = 10
+    correct = torch.zeros(num_classes, dtype=torch.float32).to(device)  # Contador de predições corretas por classe
+    total = torch.zeros(num_classes, dtype=torch.float32).to(device)    # Contador de amostras por classe
+
+    for data in test_loader:
+        data.to(device)
+        out = model(data.x, data.edge_index, data.batch)
+        pred = out.argmax(dim=1)
+
+        # Calcular as precisões por classe
+        for i in range(num_classes):
+            correct[i] += int(((pred == i) & (data.y == i)).sum())
+            total[i] += int((data.y == i).sum())
+
+    class_accuracies = correct / total              # recall médias por classe
+
+    overall_accuracy = correct.sum() / total.sum()  # recall geral
+
+    return overall_accuracy, class_accuracies
+
+
+def instrumented_train(model, file_name, device, n_epochs=100, run_test=False):
     train_loader = loader_from_pyg_list(file_name, partition='Training', shuffle=True)
-    test_loader = loader_from_pyg_list(file_name, partition='Test_1', shuffle=True)
+    val_loader = loader_from_pyg_list(file_name, partition='Test_1', shuffle=True)
 
     start = time.time()
     results = []
     elapsed_time = 0
     max_train_acc = 0
-    max_test_acc = 0
+    max_val_acc = 0
     finnish_counter = 0
     best_model = None
     output_filename = model.model_name+"_"+datetime.now().isoformat().replace(':', '_')
 
     for epoch in range(1, n_epochs+1):
         train(model, train_loader, device)
-        train_acc = test(model, train_loader, device)
-        test_acc = test(model, test_loader, device)
+        train_acc = validate(model, train_loader, device)
+        val_acc = validate(model, val_loader, device)
         elapsed_time = time.time() - start
 
         print(f'Epoch: {epoch:03d}, Train Acc: {train_acc:.4f}, '
-              f'Test Acc: {test_acc:.4f}, ElapsedTime: {elapsed_time:.1f}s')
+              f'Test Acc: {val_acc:.4f}, ElapsedTime: {elapsed_time:.1f}s')
 
         if train_acc > max_train_acc:
             max_train_acc = train_acc
 
-        if test_acc > max_test_acc:
-            max_test_acc = test_acc
+        if val_acc > max_val_acc:
+            max_val_acc = val_acc
             finnish_counter = 0
             print('Best model! Saving Checkpoint...')
             torch.save(model.state_dict(), './models/' + output_filename)
@@ -68,12 +92,12 @@ def instrumented_train(model, file_name, device, n_epochs=100):
         results.append({
             'epoch': epoch,
             'train_acc': train_acc,
-            'test_acc': test_acc
+            'test_acc': val_acc
         })
 
-        if test_acc < max_test_acc - .2:
+        if val_acc < max_val_acc - .2:
             finnish_counter += 1
-            if finnish_counter > 20:
+            if finnish_counter > 50:
                 break
 
     results = pd.DataFrame.from_records(results)
@@ -87,8 +111,15 @@ def instrumented_train(model, file_name, device, n_epochs=100):
     results.attrs['preprocess_file'] = file_name
     results.attrs['runtime'] = elapsed_time
     results.attrs['best_train_acc'] = max_train_acc
-    results.attrs['best_test_acc'] = max_test_acc
+    results.attrs['best_val_acc'] = max_val_acc
     results.attrs['best_model'] = best_model
+
+    if run_test:
+        test_loader = loader_from_pyg_list(file_name, partition='Test_2', shuffle=True)
+        overall_accuracy, class_accuracies = test(model, test_loader, device)
+        results.attrs['test_acc'] = overall_accuracy
+        results.attrs['class_acc'] = class_accuracies
+        output_filename = 'TESTED_'+output_filename
 
     results.to_pickle('./results/'+output_filename)
 

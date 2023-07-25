@@ -17,16 +17,6 @@ from PIL import Image
 
 half_vgg16_conv2 = nn.Sequential(*list(vgg16(pretrained=True).features)[:8])
 
-def compute_neighbors_average(adj, nodes):
-    # inverse degree matrix
-    adj_t = torch.Tensor(adj, device=nodes.device)
-    degree_inverse = torch.inverse(torch.diag(adj_t.sum(dim=1)))
-
-    # Multiplicar a matriz de adjacências normalizada com a matriz de atributos dos nós
-    transition_matrix = degree_inverse @ adj_t
-    neighbor_average = transition_matrix @ nodes
-
-    return neighbor_average
 
 class ITGProcessor:
     """ ImageToGraph"""
@@ -151,7 +141,7 @@ class ITGProcessor:
         sp_mask = sp_mask.to(self.device)
         return sp_mask
 
-    def generate_node_features(self, img, sp_mask, adj):
+    def generate_node_features(self, img, sp_mask):
         """ this function must use the backbone net to generate the node features"""
         """ remember the possible not mapped node, the ones with the masked vanished in the process"""
         n_nodes = sp_mask.max()
@@ -174,16 +164,34 @@ class ITGProcessor:
             node_features = filtered_features.mean(dim=(1, 2)).unsqueeze(0)
             nodes_features[node_id] = node_features
 
-        all_zeroes_mask = torch.all(torch.eq(nodes_features, 0), dim=1)
-        neighbors_average = compute_neighbors_average(adj, nodes_features)
-
-        nodes_features[all_zeroes_mask] = neighbors_average[all_zeroes_mask]
-
+        all_zero_mask = torch.all(torch.eq(nodes_features, 0), dim=1)
+        for i in range(nodes_features.shape[0]):
+            if all_zero_mask[i]:
+                if i == 0:
+                    nodes_features[i] = nodes_features[i+1]
+                elif i == nodes_features.shape[0] - 1:
+                    nodes_features[i] = nodes_features[i - 1]
+                else:
+                    nodes_features[i] = (nodes_features[i-1] + nodes_features[i+1])/2.0
         nodes_features.detach_()
         return nodes_features
 
     def compute_graph_from_data(self, nodes, adjacency_matrix, label, partition):
         """ Convert preprocessed data to pytorch geometric Data"""
+
+        # G = nx.from_numpy_matrix(adjacency_matrix)
+        # for i, node in enumerate(nodes):
+        #     G.nodes[i]['features'] = node
+        #
+        # g = from_networkx(G)
+        #
+        # data = Data(
+        #     edge_index=g.edge_index[:3],
+        #     x=g.features,
+        #     edge_attr=g.weight.unsqueeze(-1),
+        #     y=label
+        # )
+
         g = from_networkx(nx.from_numpy_matrix(adjacency_matrix))
 
         g = Data(
@@ -217,20 +225,23 @@ class ITGProcessor:
         else:
             adj = self.knn_adj_matrix(sp_coord)
 
-        nodes_features = self.generate_node_features(img, superpixels, adj)
+        nodes_features = self.generate_node_features(img, superpixels)
         g = self.compute_graph_from_data(nodes_features, adj,
                                          label=label2tensor_map[label],
                                          partition=partition2idx_map[partition])
         return g
 
 
-# if __name__ == '__main__':
-#     from PIL import Image
-#     img = Image.open('../datasets/UATD_classification/samples_autocontrast1/Training/plane/278.bmp')
-#
-#     resnet_conv = nn.Sequential(*list(resnet18(pretrained=True).children())[:8])
-#
-#     sp_intensity, sp_coord, sp_order, superpixels = ITGProcessor().segment_image(img)
-#
-#     graph = ITGProcessor().img2graph_cnn(img=img, label=torch.Tensor([1]), partition='Test')
-#
+if __name__ == '__main__':
+    from PIL import Image
+    img = Image.open('../datasets/UATD_classification/samples_autocontrast1/Training/plane/278.bmp')
+
+    resnet_conv = nn.Sequential(*list(resnet18(pretrained=True).children())[:8])
+
+    # sp_intensity, sp_coord, sp_order, superpixels = ITGProcessor().segment_image(img_np)
+
+    # input_tensor =ITGProcessor(resnet_conv).preprocess_img_cnn(img)
+    # output_shape = ITGProcessor(resnet_conv).backbone_net.forward(input_tensor).shape
+
+    print(resnet_conv)
+    # print(output_shape)
