@@ -98,12 +98,16 @@ class GAT(GNNBase):
         self.model_name = GATConv.__name__
 
 
-class SPdirect(torch.nn.Module):
+class LinearModel(torch.nn.Module):
     def __init__(self, input_dim, output_dim, pooling):
-        super(SPdirect, self).__init__()
+        super(LinearModel, self).__init__()
 
         self.lin = Linear(input_dim, output_dim)
         self.pooling = pooling
+        self.model_name = 'LinearModel'
+        self.num_layers = 0
+        self.hidden_dim = 0
+        self.pooling_name = pooling.__name__
 
     def forward(self, x, edge_index, batch):
         x = self.pooling(x, batch)
