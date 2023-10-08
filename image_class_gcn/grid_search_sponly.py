@@ -71,7 +71,7 @@ if __name__ == '__main__':
             graphs_dir + '/cnn/equalize_knn_w_75_ResNet18_cut8_ft',
         ]
     }
-    n_epochs = 300
+    n_epochs = 100
     iter_count = iter_start
 
     for parameters in itertools.islice(itertools.product(*grid.values()), iter_start, None):

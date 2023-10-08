@@ -4,7 +4,7 @@ from torch_geometric.utils import from_networkx
 from torch_geometric.data import Data
 from torch_geometric.loader import DataLoader
 from pandas import read_pickle
-from torchvision.transforms import Resize, Pad
+from torchvision.transforms import Resize, Pad, InterpolationMode
 import os
 
 
@@ -56,6 +56,29 @@ class FitAndPad:
         img = Pad(padding)(img)
 
         return img
+
+class SPFitAndPad:
+    def __call__(self, img, max_w=224):
+        max_h = max_w
+
+        max_side, min_side = max(img.size), min(img.size)
+        factor = max(int(max_w * min_side / max_side), 1)
+        img = Resize(factor, interpolation=InterpolationMode.NEAREST)(img)
+
+        imsize = img.size
+        h_padding = (max_w - imsize[0]) / 2
+        v_padding = (max_h - imsize[1]) / 2
+        l_pad = h_padding if h_padding % 1 == 0 else h_padding + 0.5
+        t_pad = v_padding if v_padding % 1 == 0 else v_padding + 0.5
+        r_pad = h_padding if h_padding % 1 == 0 else h_padding - 0.5
+        b_pad = v_padding if v_padding % 1 == 0 else v_padding - 0.5
+
+        padding = (int(l_pad), int(t_pad), int(r_pad), int(b_pad))
+
+        img = Pad(padding)(img)
+
+        return img
+
 
 
 class PILResize:

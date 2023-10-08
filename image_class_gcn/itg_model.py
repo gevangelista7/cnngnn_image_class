@@ -1,7 +1,8 @@
 import numpy as np
+from scipy.ndimage import label
 from torch_geometric.data import Data
 from torchvision.models import vgg16, resnet18
-from torchvision.transforms import Resize, ToTensor, Pad
+from torchvision.transforms import Resize, ToTensor, Pad, InterpolationMode
 import torch.nn as nn
 from torch_geometric.utils import from_networkx
 from skimage.segmentation import slic
@@ -11,7 +12,7 @@ import torch
 import scipy.ndimage
 import scipy.spatial
 from scipy.spatial.distance import cdist
-from utils import label2tensor_map, partition2idx_map, FitAndPad
+from utils import label2tensor_map, partition2idx_map, FitAndPad, SPFitAndPad
 from PIL import Image
 
 
@@ -144,8 +145,7 @@ class ITGProcessor:
         return img
 
     def preprocess_sp_mask(self, sp_mask, features_map_size):
-        sp_mask = FitAndPad()(Image.fromarray(sp_mask.astype(np.int8)))
-        sp_mask = Resize(features_map_size)(sp_mask)
+        sp_mask = SPFitAndPad()(Image.fromarray(sp_mask.astype(np.int8)), max_w=max(features_map_size))
         sp_mask = ToTensor()(sp_mask)
         sp_mask = sp_mask.type(torch.int8).squeeze(0)
         sp_mask = sp_mask.to(self.device)
@@ -204,10 +204,9 @@ class ITGProcessor:
             adj = self.knn_adj_matrix(sp_coord)
 
         node_features = sp_intensity
-        label = label2tensor_map[label]
-        g = self.compute_graph_from_data(node_features, adj)
-        g.y = label2tensor_map[label]
-        g.partition = partition2idx_map[partition]
+        g = self.compute_graph_from_data(node_features, adj,
+                                         label=label2tensor_map[label],
+                                         partition=partition2idx_map[partition])
         return g
 
     def img2graph_cnn(self, img, label, partition, pixel_dist=False):
@@ -224,13 +223,13 @@ class ITGProcessor:
         return g
 
 
-# if __name__ == '__main__':
-#     from PIL import Image
-#     img = Image.open('../datasets/UATD_classification/samples_autocontrast1/Training/plane/278.bmp')
-#
-#     resnet_conv = nn.Sequential(*list(resnet18(pretrained=True).children())[:8])
-#
-#     sp_intensity, sp_coord, sp_order, superpixels = ITGProcessor().segment_image(img)
-#
-#     graph = ITGProcessor().img2graph_cnn(img=img, label=torch.Tensor([1]), partition='Test')
+if __name__ == '__main__':
+    from PIL import Image
+    img = Image.open('../datasets/UATD_classification/samples_autocontrast1/Training/plane/754.bmp')
+
+    resnet_conv = nn.Sequential(*list(resnet18(pretrained=True).children())[:8])
+
+    sp_intensity, sp_coord, sp_order, superpixels = ITGProcessor().segment_image(img)
+
+    graph = ITGProcessor().img2graph_cnn(img=img, label=torch.Tensor([1]), partition='Test')
 #

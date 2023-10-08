@@ -11,7 +11,6 @@ from utils import classification_dir, graphs_dir, models_dir
 sys.path.append('.')
 
 
-
 if __name__ == '__main__':
     """
     possible values
@@ -27,16 +26,17 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     test_mode = args.test_mode
-    test_mode = True
+    test_mode = False
 
     total_count = 0
     obj_counter = {}
     ds = []
 
-    img_treat = 'autocontrast1'
+    img_treat = 'original'
     linking_type = 'knn_w'
     superpixel_method = 'resnet_pretrain'
-    finetuned_model = '/ResNet18/ResNet_best_model_fitpad.pth'      # REMEMBER to put '/' in the beginning (placeholder: None)
+    # finetuned_model = '/ResNet18/ResNet_best_model_fitpad.pth'      # REMEMBER to put '/' in the beginning (placeholder: None)
+    finetuned_model = None
     n_sp = 75
     cut_list = [1, 2, 5, 6, 8]
 
@@ -61,12 +61,12 @@ if __name__ == '__main__':
 
     if finetuned_model:
         resnet18_full = resnet18()
-        net_name = resnet18_full._get_name()
         num_features = resnet18_full.fc.in_features
         resnet18_full.fc = nn.Linear(num_features, 10)
         resnet18_full = resnet18_full.load_state_dict(torch.load(models_dir+finetuned_model))
     else:
         resnet18_full = resnet18(pretrained=True)
+    net_name = resnet18_full._get_name()
 
     for cut in cut_list:
         destination_file_cut = destination_file + '_' + net_name + '18_cut' + str(cut)
@@ -84,6 +84,8 @@ if __name__ == '__main__':
 
                     part_dir, label = os.path.split(root)
                     part = os.path.split(part_dir)[-1]
+                    if part in ['Training_ext', 'Unified']:
+                        continue
 
                     img = Image.open(img_path)
 

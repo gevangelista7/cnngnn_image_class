@@ -229,8 +229,8 @@ if __name__ == '__main__':
         # 'exp6':    {'feature_origin': ['ResNet18'],             # ResNet w/ finetune
         #             'finetune': [True]},
     }
-    savefig = True
-    exp_name = 'exp5'
+    savefig = False
+    exp_name = 'exp4'
     parameters = results.full_parameters
 
     # print('Top 10 Best General Results:')
