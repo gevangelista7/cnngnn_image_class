@@ -34,41 +34,43 @@ if __name__ == '__main__':
             # graphs_dir+'/slic/equalize_knn_w.pkl',
             # graphs_dir+'/slic/original_knn_w.pkl',
 
-            graphs_dir+'/cnn/autocontrast1_knn_w_75_ResNet18_cut1',
-            graphs_dir+'/cnn/autocontrast1_knn_w_75_ResNet18_cut2',
-            graphs_dir+'/cnn/autocontrast1_knn_w_75_ResNet18_cut5',
-            graphs_dir+'/cnn/autocontrast1_knn_w_75_ResNet18_cut6',
-            graphs_dir+'/cnn/autocontrast1_knn_w_75_ResNet18_cut8',
+            graphs_dir+'/intensity/original_knn_w_75'
 
-            graphs_dir + '/cnn/autocontrast1_knn_w_75_ResNet18_cut1_ft',
-            graphs_dir+'/cnn/autocontrast1_knn_w_75_ResNet18_cut2_ft',
-            graphs_dir+'/cnn/autocontrast1_knn_w_75_ResNet18_cut5_ft',
-            graphs_dir+'/cnn/autocontrast1_knn_w_75_ResNet18_cut6_ft',
-            graphs_dir+'/cnn/autocontrast1_knn_w_75_ResNet18_cut8_ft',
-
-            graphs_dir+'/cnn/original_knn_w_75_ResNet18_cut1',
-            graphs_dir+'/cnn/original_knn_w_75_ResNet18_cut2',
-            graphs_dir+'/cnn/original_knn_w_75_ResNet18_cut5',
-            graphs_dir+'/cnn/original_knn_w_75_ResNet18_cut6',
-            graphs_dir+'/cnn/original_knn_w_75_ResNet18_cut8',
-
-            graphs_dir + '/cnn/original_knn_w_75_ResNet18_cut1_ft',
-            graphs_dir + '/cnn/original_knn_w_75_ResNet18_cut2_ft',
-            graphs_dir + '/cnn/original_knn_w_75_ResNet18_cut5_ft',
-            graphs_dir + '/cnn/original_knn_w_75_ResNet18_cut6_ft',
-            graphs_dir + '/cnn/original_knn_w_75_ResNet18_cut8_ft',
-
-            graphs_dir + '/cnn/equalize_knn_w_75_ResNet18_cut1',
-            graphs_dir + '/cnn/equalize_knn_w_75_ResNet18_cut2',
-            graphs_dir + '/cnn/equalize_knn_w_75_ResNet18_cut5',
-            graphs_dir + '/cnn/equalize_knn_w_75_ResNet18_cut6',
-            graphs_dir + '/cnn/equalize_knn_w_75_ResNet18_cut8',
-
-            graphs_dir + '/cnn/equalize_knn_w_75_ResNet18_cut1_ft',
-            graphs_dir + '/cnn/equalize_knn_w_75_ResNet18_cut2_ft',
-            graphs_dir + '/cnn/equalize_knn_w_75_ResNet18_cut5_ft',
-            graphs_dir + '/cnn/equalize_knn_w_75_ResNet18_cut6_ft',
-            graphs_dir + '/cnn/equalize_knn_w_75_ResNet18_cut8_ft',
+            # graphs_dir+'/cnn/autocontrast1_knn_w_75_ResNet18_cut1',
+            # graphs_dir+'/cnn/autocontrast1_knn_w_75_ResNet18_cut2',
+            # graphs_dir+'/cnn/autocontrast1_knn_w_75_ResNet18_cut5',
+            # graphs_dir+'/cnn/autocontrast1_knn_w_75_ResNet18_cut6',
+            # graphs_dir+'/cnn/autocontrast1_knn_w_75_ResNet18_cut8',
+            #
+            # graphs_dir + '/cnn/autocontrast1_knn_w_75_ResNet18_cut1_ft',
+            # graphs_dir+'/cnn/autocontrast1_knn_w_75_ResNet18_cut2_ft',
+            # graphs_dir+'/cnn/autocontrast1_knn_w_75_ResNet18_cut5_ft',
+            # graphs_dir+'/cnn/autocontrast1_knn_w_75_ResNet18_cut6_ft',
+            # graphs_dir+'/cnn/autocontrast1_knn_w_75_ResNet18_cut8_ft',
+            #
+            # graphs_dir+'/cnn/original_knn_w_75_ResNet18_cut1',
+            # graphs_dir+'/cnn/original_knn_w_75_ResNet18_cut2',
+            # graphs_dir+'/cnn/original_knn_w_75_ResNet18_cut5',
+            # graphs_dir+'/cnn/original_knn_w_75_ResNet18_cut6',
+            # graphs_dir+'/cnn/original_knn_w_75_ResNet18_cut8',
+            #
+            # graphs_dir + '/cnn/original_knn_w_75_ResNet18_cut1_ft',
+            # graphs_dir + '/cnn/original_knn_w_75_ResNet18_cut2_ft',
+            # graphs_dir + '/cnn/original_knn_w_75_ResNet18_cut5_ft',
+            # graphs_dir + '/cnn/original_knn_w_75_ResNet18_cut6_ft',
+            # graphs_dir + '/cnn/original_knn_w_75_ResNet18_cut8_ft',
+            #
+            # graphs_dir + '/cnn/equalize_knn_w_75_ResNet18_cut1',
+            # graphs_dir + '/cnn/equalize_knn_w_75_ResNet18_cut2',
+            # graphs_dir + '/cnn/equalize_knn_w_75_ResNet18_cut5',
+            # graphs_dir + '/cnn/equalize_knn_w_75_ResNet18_cut6',
+            # graphs_dir + '/cnn/equalize_knn_w_75_ResNet18_cut8',
+            #
+            # graphs_dir + '/cnn/equalize_knn_w_75_ResNet18_cut1_ft',
+            # graphs_dir + '/cnn/equalize_knn_w_75_ResNet18_cut2_ft',
+            # graphs_dir + '/cnn/equalize_knn_w_75_ResNet18_cut5_ft',
+            # graphs_dir + '/cnn/equalize_knn_w_75_ResNet18_cut6_ft',
+            # graphs_dir + '/cnn/equalize_knn_w_75_ResNet18_cut8_ft',
         ]
     }
     n_epochs = 300

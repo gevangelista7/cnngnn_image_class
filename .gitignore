@@ -3,3 +3,5 @@ catkin_ws/
 graph_attention_pool/
 sigat_reproduction/
 wavelet_based_superpixels/
+/sigat_reproduction/
+/wavelet_based_superpixels/

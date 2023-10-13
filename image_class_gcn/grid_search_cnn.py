@@ -35,29 +35,31 @@ if __name__ == '__main__':
             # graphs_dir+'/slic/equalize_knn_w.pkl',
             # graphs_dir+'/slic/original_knn_w.pkl',
 
-            graphs_dir+'/cnn/autocontrast1_knn_w_75_ResNet18_cut1',
-            graphs_dir+'/cnn/autocontrast1_knn_w_75_ResNet18_cut2',
-            graphs_dir+'/cnn/autocontrast1_knn_w_75_ResNet18_cut5',
-            # graphs_dir+'/cnn/autocontrast1_knn_w_75_ResNet18_cut6',
-            graphs_dir+'/cnn/autocontrast1_knn_w_75_ResNet18_cut8',
-
-            graphs_dir + '/cnn/autocontrast1_knn_w_75_ResNet18_cut1_ft',
-            graphs_dir+'/cnn/autocontrast1_knn_w_75_ResNet18_cut2_ft',
-            graphs_dir+'/cnn/autocontrast1_knn_w_75_ResNet18_cut5_ft',
-            # graphs_dir+'/cnn/autocontrast1_knn_w_75_ResNet18_cut6_ft',
-            graphs_dir+'/cnn/autocontrast1_knn_w_75_ResNet18_cut8_ft',
-
-            # graphs_dir+'/cnn/original_knn_w_75_ResNet18_cut1',
-            # graphs_dir+'/cnn/original_knn_w_75_ResNet18_cut2',
-            # graphs_dir+'/cnn/original_knn_w_75_ResNet18_cut5',
-            # # graphs_dir+'/cnn/original_knn_w_75_ResNet18_cut6',
-            # graphs_dir+'/cnn/original_knn_w_75_ResNet18_cut8',
+            # graphs_dir+'/cnn/autocontrast1_knn_w_75_ResNet18_cut1',
+            # graphs_dir+'/cnn/autocontrast1_knn_w_75_ResNet18_cut2',
+            # graphs_dir+'/cnn/autocontrast1_knn_w_75_ResNet18_cut5',
+            # # graphs_dir+'/cnn/autocontrast1_knn_w_75_ResNet18_cut6',
+            # graphs_dir+'/cnn/autocontrast1_knn_w_75_ResNet18_cut8',
             #
-            # graphs_dir + '/cnn/original_knn_w_75_ResNet18_cut1_ft',
-            # graphs_dir + '/cnn/original_knn_w_75_ResNet18_cut2_ft',
-            # graphs_dir + '/cnn/original_knn_w_75_ResNet18_cut5_ft',
-            # # graphs_dir + '/cnn/original_knn_w_75_ResNet18_cut6_ft',
-            # graphs_dir + '/cnn/original_knn_w_75_ResNet18_cut8_ft',
+            # graphs_dir + '/cnn/autocontrast1_knn_w_75_ResNet18_cut1_ft',
+            # graphs_dir+'/cnn/autocontrast1_knn_w_75_ResNet18_cut2_ft',
+            # graphs_dir+'/cnn/autocontrast1_knn_w_75_ResNet18_cut5_ft',
+            # # graphs_dir+'/cnn/autocontrast1_knn_w_75_ResNet18_cut6_ft',
+            # graphs_dir+'/cnn/autocontrast1_knn_w_75_ResNet18_cut8_ft',
+
+            # graphs_dir+'/intensity/original_knn_w_75',
+
+            graphs_dir+'/cnn/original_knn_w_75_ResNet18_cut1',
+            graphs_dir+'/cnn/original_knn_w_75_ResNet18_cut2',
+            graphs_dir+'/cnn/original_knn_w_75_ResNet18_cut5',
+            # graphs_dir+'/cnn/original_knn_w_75_ResNet18_cut6',
+            graphs_dir+'/cnn/original_knn_w_75_ResNet18_cut8',
+            #
+            graphs_dir + '/cnn/original_knn_w_75_ResNet18_cut1_ft',
+            graphs_dir + '/cnn/original_knn_w_75_ResNet18_cut2_ft',
+            graphs_dir + '/cnn/original_knn_w_75_ResNet18_cut5_ft',
+            # graphs_dir + '/cnn/original_knn_w_75_ResNet18_cut6_ft',
+            graphs_dir + '/cnn/original_knn_w_75_ResNet18_cut8_ft',
 
             # graphs_dir + '/cnn/equalize_knn_w_75_ResNet18_cut1',
             # graphs_dir + '/cnn/equalize_knn_w_75_ResNet18_cut2',
@@ -72,7 +74,7 @@ if __name__ == '__main__':
             # graphs_dir + '/cnn/equalize_knn_w_75_ResNet18_cut8_ft',
         ]
     }
-    n_epochs = 300
+    n_epochs = 100
     iter_count = iter_start
 
     for parameters in itertools.islice(itertools.product(*grid.values()), iter_start, None):
@@ -90,8 +92,8 @@ if __name__ == '__main__':
         GAT_model = GAT(input_dim=num_features, output_dim=10,
                         hidden_dim=hidden_dim, num_layers=num_layers, pooling=pooling, heads=4).to(device)
 
-        GIN_model = GIN(input_dim=num_features, output_dim=10,
-                        hidden_dim=hidden_dim, num_layers=num_layers, pooling=pooling).to(device)
+        # GIN_model = GIN(input_dim=num_features, output_dim=10,
+        #                 hidden_dim=hidden_dim, num_layers=num_layers, pooling=pooling).to(device)
 
         print('Beginning of test with the parameters: ' + str(parameters))
 
