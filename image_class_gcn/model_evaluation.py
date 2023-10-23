@@ -4,6 +4,7 @@ import time
 import pandas as pd
 import torch
 from utils import loader_from_pyg_list
+from sklearn.metrics import precision_score, recall_score, accuracy_score, f1_score, classification_report
 
 torch.manual_seed(42)
 
@@ -31,7 +32,14 @@ def validate(model, test_loader, device):
         pred = out.argmax(dim=1)
         correct += int((pred == data.y).sum())
 
+        # val_f1 = f1_score(data.y, pred, average='macro')
+        # val_precision = precision_score(data.y, pred, average='macro')
+        # val_recall = recall_score(data.y, pred, average='macro')
+        # val_accuracy = accuracy_score(data.y, pred)
+        # val_report = classification_report(data.y, pred)
+
     return correct / len(test_loader.dataset)
+    # return val_accuracy
 
 
 def test(model, test_loader, device):
@@ -71,6 +79,7 @@ def instrumented_train(model, file_name, device, n_epochs=100, run_test=False):
     best_model = None
     output_filename = model.model_name+"_"+datetime.now().isoformat().replace(':', '_')
 
+    # val_results = {'epoch': [], 'accuracy': [], 'precision': [], 'recall': [], 'f1': [], 'reports': []}
     for epoch in range(1, n_epochs+1):
         train(model, train_loader, device)
         train_acc = validate(model, train_loader, device)

@@ -32,13 +32,13 @@ if __name__ == '__main__':
     obj_counter = {}
     ds = []
 
-    img_treat = 'original'
+    img_treat = 'autocontrast1'
     linking_type = 'knn_w'
     superpixel_method = 'resnet_pretrain'
     # finetuned_model = '/ResNet18/ResNet_best_model_fitpad.pth'      # REMEMBER to put '/' in the beginning (placeholder: None)
     finetuned_model = None
     n_sp = 75
-    cut_list = [1, 2, 5, 6, 8]
+    cut_list = [1, 2, 5, 8]
 
     original_dir = classification_dir+'/samples_'+img_treat
     cnn_dir = graphs_dir+'/cnn'
