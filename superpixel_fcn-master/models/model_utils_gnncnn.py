@@ -29,44 +29,80 @@ def create_spix_idx(img_H, img_W, downsize, batch_size):
     return spix_idx_tensor
 
 
-def one_sp_center(membership_map):
-    n_sp, h, w = membership_map.size()
-    x_coords, y_coords = torch.meshgrid(torch.arange(h), torch.arange(w))
+def calc_sp_centers(membership_map):
+    batch_size, sp, h, w = membership_map.shape
 
-    # Calculate the weighted sum of coordinates
-    weighted_x = torch.sum(x_coords * membership_map)
-    weighted_y = torch.sum(y_coords * membership_map)
+    x_grid, y_grid = torch.meshgrid(torch.arange(h), torch.arange(w))
 
-    # Calculate the sum of tensor values
-    sum_of_values = torch.sum(membership_map)
+    x_grid = x_grid.to(membership_map.device)
+    x_grid = x_grid / x_grid.max()
 
-    # Calculate the center of mass
-    center_x = weighted_x / sum_of_values
-    center_y = weighted_y / sum_of_values
+    y_grid = y_grid.to(membership_map.device)
+    y_grid = y_grid / y_grid.max()
 
-    return center_x, center_y
+    # Expand the grids to match the batch size and 'sp' dimensions
+    x_grid = x_grid.unsqueeze(0).unsqueeze(0)
+    y_grid = y_grid.unsqueeze(0).unsqueeze(0)
 
+    # Multiply the grids by the membership tensor
+    x_center = torch.sum(x_grid * membership_map, dim=(2, 3)) / (torch.sum(membership_map, dim=(2, 3)) + 1e-10)
+    y_center = torch.sum(y_grid * membership_map, dim=(2, 3)) / (torch.sum(membership_map, dim=(2, 3)) + 1e-10)
 
-def all_sp_centers(membership_map):
-    # todo make this with tensors
-    centers = []
-    for sp_membership_map in membership_map:
-        centers.append(one_sp_center(sp_membership_map))
+    centers = torch.stack((x_center, y_center), dim=-1)
 
-    return torch.tensor(centers)
+    return centers
 
 
-def one_sp_features(probs_map, x_coords, y_coords):
-    # Calculate the weighted sum of coordinates
-    weighted_x = torch.sum(x_coords * probs_map)
-    weighted_y = torch.sum(y_coords * probs_map)
+def calc_sp_features(membership_maps, features_map):
+    bs, n_sp, _, _ = membership_maps.shape
+    n_feat = features_map.shape[1]
+    sp_features = membership_maps.view(bs, n_sp, -1) @ features_map.view(bs, -1, n_feat)
+    sp_features = sp_features / sp_features.sum(dim=1)
+    return sp_features
 
-    # Calculate the sum of tensor values
-    sum_of_values = torch.sum(probs_map)
 
-    # Calculate the center of mass
-    center_x = weighted_x / sum_of_values
-    center_y = weighted_y / sum_of_values
+def calc_corr_matrix(membership_maps, features_map, pos_enc=True):
+    sp_features = calc_sp_features(membership_maps, features_map)
+    if pos_enc:
+        centers = calc_sp_centers(membership_maps)
+        sp_features = torch.concat((sp_features, centers), dim=-1)
 
-    return center_x, center_y
+    corr_matrix = sp_features @ sp_features.transpose(1, 2)
+
+    return corr_matrix
+
+
+def knn_adjacency_matrix(correlation_matrix, k_neighbors=8):
+
+    batch_size, n_sp, _ = correlation_matrix.shape
+
+    adjacency_matrix = np.zeros_like(correlation_matrix)
+
+    # Loop through each correlation matrix in the batch
+    for i in range(batch_size):
+        for j in range(n_sp):
+            # Find the indices of the k largest values in the correlation matrix
+            k_indices = np.argpartition(correlation_matrix[i, j], -k_neighbors)[-k_neighbors:]
+
+            # Set the corresponding entries in the adjacency matrix to 1
+            adjacency_matrix[i, j, k_indices] = 1
+
+    return adjacency_matrix
+
+
+def knn_edges_from_corr(correlation_matrix, k_neighbors=8):
+
+    batch_size, n_sp, _ = correlation_matrix.shape
+
+    edge_lists = []
+    for i in range(batch_size):
+        edges = []
+        for j in range(n_sp):
+            # Find the indices of the k largest values in the correlation matrix
+            k_indices = np.argpartition(correlation_matrix[i, j], -k_neighbors)[-k_neighbors:]
+            edges.extend([(j, idx) for idx in k_indices])
+
+        edge_lists.append(edges)
+
+    return edge_lists
 

@@ -1,4 +1,4 @@
-from models.Spixel_single_layer_gnn import CNNGNNModel
+from models.RichFeatureSPixelFCN import RichFeatureSPixelFCN
 import torch
 import numpy as np
 
@@ -53,13 +53,18 @@ if __name__ == '__main__':
     img1 = input_transform(img)
     ori_img = input_transform(img_)
 
-    model = CNNGNNModel(input_shape=(1,)+img.shape, device=device)
+    model = RichFeatureSPixelFCN(input_shape=(1,) + img.shape, device=device)
 
     # compute output
     tic = time.time()
     membership_maps, features_map = model(img1.unsqueeze(0).to(device))
     toc = time.time() - tic
     print(f'forward time: {toc}')
+
+    sp_features = calc_sp_features(membership_maps, features_map)
+    centers = calc_sp_centers(membership_maps)
+
+    corr_matrix = calc_corr_matrix(membership_maps, features_map)
 
 
     # spix_idx_tensor = torch.arange(18).reshape((2, 3, 3))

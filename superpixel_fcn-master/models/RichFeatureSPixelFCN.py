@@ -15,11 +15,11 @@ import torch.nn.functional as F
 default_device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
-class CNNGNNModel(nn.Module):
+class RichFeatureSPixelFCN(nn.Module):
     expansion = 1
 
     def __init__(self, input_shape, batchNorm=True, device=default_device, downsize=16):
-        super(CNNGNNModel, self).__init__()
+        super(RichFeatureSPixelFCN, self).__init__()
 
         self.batchNorm = batchNorm
         self.assign_ch = 9
@@ -30,7 +30,8 @@ class CNNGNNModel(nn.Module):
         # prob neighbourhood to all-superpixels
         self.spix_idx_tensor = create_spix_idx(img_H=img_h, img_W=img_w, downsize=downsize,
                                                batch_size=self.batch_size).to(self.device)
-        n_spixl, _, _ = calc_n_spix(img_h, img_w, downsize)
+        n_spixl, n_spixl_h, n_spixl_w = calc_n_spix(img_h, img_w, downsize)
+        x_coords, y_coords = torch.meshgrid(torch.arange(n_spixl_h), torch.arange(n_spixl_w))
 
         # cache of probabilities (spix membership)
         self.prob_all_shape = (self.batch_size, n_spixl, img_h, img_w)
@@ -138,29 +139,3 @@ class CNNGNNModel(nn.Module):
     def load_spix_net(self, state_dict):
         # todo
         pass
-
-    #     own_state = self.state_dict()
-    #     for name, param in state_dict.items():
-    #         if name not in own_state:
-    #             continue
-    #         if isinstance(param, Parameter):
-    #             # backwards compatibility for serialized parameters
-    #             param = param.data
-    #         own_state[name].copy_(param)
-
-
-# def SpixelNet1l( data=None):
-#     # Model without  batch normalization
-#     model = SpixelNet(batchNorm=False)
-#     if data is not None:
-#         model.load_state_dict(data['state_dict'])
-#     return model
-#
-#
-# def SpixelNet1l_bn(data=None):
-#     # model with batch normalization
-#     model = SpixelNet(batchNorm=True)
-#     if data is not None:
-#         model.load_state_dict(data['state_dict'])
-#     return model
-#
